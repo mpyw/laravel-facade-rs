@@ -190,39 +190,567 @@ fn main() {
 
 ## Laravel mapping
 
-| Laravel | laravel-facade |
-| --- | --- |
-| `abstract class Facade` | `enum Facade {}`. It has no values, like an abstract class. |
-| `class Cache extends Facade` | `#[extends_facade(Cache)]` |
-| `getFacadeAccessor()` | `type Accessor = dyn CacheStore`. The macro sets it. |
-| `__callStatic()` | One static method per trait method |
-| `static::$cached` | `#[extends_facade(Cache, cached = false)]` |
-| `Facade::setFacadeApplication($app)` | `Facade::set_facade_application(app)` |
-| `Facade::getFacadeApplication()` | `Facade::get_facade_application()` |
-| `Cache::getFacadeRoot()` | `Cache::get_facade_root()`. It panics with `A facade root has not been set.` |
-| `Cache::swap($instance)` | `Cache::swap(instance)`. It also calls `Application::instance()`. |
-| `Cache::isFake()` | `Cache::is_fake()`, with the `Fake` marker trait |
-| `Cache::shouldReceive()` / `Cache::expects()` | `Cache::should_receive(..)` / `Cache::expects(..)` |
-| `Cache::resolved($callback)` | `Cache::resolved(\|root, app\| ...)` |
-| `Cache::clearResolvedInstance()` | `Cache::clear_resolved_instance()` |
-| `Facade::clearResolvedInstance($name)` | `Facade::clear_resolved_instance::<dyn CacheStore>()` |
-| `Facade::clearResolvedInstances()` | `Facade::clear_resolved_instances()` |
-| `Cache::spy()` / `Cache::partialMock()` | Not supported. mockall has no spies. |
-| `Facade::defaultAliases()` | `use app::facades::Cache;` |
+Each row shows the same thing in Laravel and in laravel-facade.
+
+<table>
+<thead>
+<tr><th>What</th><th>Laravel</th><th>laravel-facade</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>Define a facade. The trait is the accessor. The macro writes <code>impl ExtendsFacade for Cache</code> with <code>type Accessor = dyn CacheStore</code>.</td>
+<td>
+
+```php
+class Cache extends Facade
+{
+    protected static function getFacadeAccessor()
+    {
+        return 'cache';
+    }
+}
+```
+
+</td>
+<td>
+
+```rs
+#[extends_facade(Cache)]
+pub trait CacheStore: Interface {
+    fn get(&self, key: &str) -> Option<String>;
+    fn put(&self, key: &str, value: &str);
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>Do not cache the resolved instance. Each call resolves the accessor again.</td>
+<td>
+
+```php
+class Uuid extends Facade
+{
+    protected static $cached = false;
+
+    protected static function getFacadeAccessor()
+    {
+        return 'uuid';
+    }
+}
+```
+
+</td>
+<td>
+
+```rs
+#[extends_facade(Uuid, cached = false)]
+pub trait IdGenerator: Interface {
+    fn id(&self) -> usize;
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>Call the root through the facade. Laravel forwards with <code>__callStatic()</code> at runtime. The macro generates one static method per trait method.</td>
+<td>
+
+```php
+Cache::put('framework', 'Laravel');
+
+$value = Cache::get('framework');
+```
+
+</td>
+<td>
+
+```rs
+Cache::put("framework", "Laravel");
+
+let value = Cache::get("framework");
+```
+
+</td>
+</tr>
+<tr>
+<td>Bind the accessors in the container. A shaku component is shared. A shaku provider builds a new instance each time.</td>
+<td>
+
+```php
+$app->singleton('cache', fn () => new ArrayStore);
+
+$app->bind('uuid', fn () => new UuidGenerator);
+```
+
+</td>
+<td>
+
+```rs
+let app = Application::builder(AppModule::builder().build())
+    .bind::<dyn CacheStore>()
+    .bind_provider::<dyn IdGenerator>()
+    .build();
+```
+
+</td>
+</tr>
+<tr>
+<td>Set the application behind all facades. Laravel does it while booting. Here you call it yourself.</td>
+<td>
+
+```php
+Facade::setFacadeApplication($app);
+
+$app = Facade::getFacadeApplication();
+
+Facade::setFacadeApplication(null);
+```
+
+</td>
+<td>
+
+```rs
+Facade::set_facade_application(app);
+
+let app = Facade::get_facade_application();
+
+Facade::set_facade_application(None);
+```
+
+</td>
+</tr>
+<tr>
+<td>Get the root instance. Without an application, it panics with <code>A facade root has not been set.</code> The <code>try_</code> version returns an <code>Error</code> instead.</td>
+<td>
+
+```php
+$store = Cache::getFacadeRoot();
+```
+
+</td>
+<td>
+
+```rs
+let store: Arc<dyn CacheStore> = Cache::get_facade_root();
+
+let store = Cache::try_get_facade_root()?;
+```
+
+</td>
+</tr>
+<tr>
+<td>Hot-swap the root. It also replaces the instance in the application.</td>
+<td>
+
+```php
+Cache::swap(new ArrayStore);
+```
+
+</td>
+<td>
+
+```rs
+Cache::swap(Arc::new(ArrayStore::default()));
+```
+
+</td>
+</tr>
+<tr>
+<td>Swap in a fake. A type marked with <code>Fake</code> makes <code>is_fake()</code> return <code>true</code>. <code>fake()</code> returns the fake for assertions.</td>
+<td>
+
+```php
+class CacheFake implements Fake
+{
+    // ...
+}
+
+Cache::swap(new CacheFake);
+
+Cache::isFake(); // true
+```
+
+</td>
+<td>
+
+```rs
+impl Fake for CacheFake {}
+
+let fake = Cache::fake(CacheFake::default());
+
+Cache::is_fake(); // true
+```
+
+</td>
+</tr>
+<tr>
+<td>Set expectations on a mock. The first call swaps in <code>MockCacheStore::default()</code>. Later calls add to the same mock.</td>
+<td>
+
+```php
+Cache::shouldReceive('get')
+    ->with('key')
+    ->once()
+    ->andReturn('value');
+```
+
+</td>
+<td>
+
+```rs
+Cache::should_receive(|mock: &mut MockCacheStore| {
+    mock.expect_get()
+        .with(eq("key"))
+        .times(1)
+        .return_const(Some("value".to_owned()));
+});
+```
+
+</td>
+</tr>
+<tr>
+<td>Same as <code>shouldReceive()</code>, with the other name.</td>
+<td>
+
+```php
+Cache::expects('get')
+    ->andReturn('value');
+```
+
+</td>
+<td>
+
+```rs
+Cache::expects(|mock: &mut MockCacheStore| {
+    mock.expect_get()
+        .return_const(Some("value".to_owned()));
+});
+```
+
+</td>
+</tr>
+<tr>
+<td>Run a callback when the root is resolved. If it was already resolved, the callback runs right away too.</td>
+<td>
+
+```php
+Cache::resolved(function ($cache, $app) {
+    // ...
+});
+```
+
+</td>
+<td>
+
+```rs
+Cache::resolved(|cache, app| {
+    // ...
+});
+```
+
+</td>
+</tr>
+<tr>
+<td>Clear cached roots. Laravel names the accessor with a string. Here the facade or the accessor type names it.</td>
+<td>
+
+```php
+Cache::clearResolvedInstance('cache');
+
+Facade::clearResolvedInstance('cache');
+
+Facade::clearResolvedInstances();
+```
+
+</td>
+<td>
+
+```rs
+Cache::clear_resolved_instance();
+
+Facade::clear_resolved_instance::<dyn CacheStore>();
+
+Facade::clear_resolved_instances();
+```
+
+</td>
+</tr>
+<tr>
+<td>Spies and partial mocks. mockall has neither, so they are not supported.</td>
+<td>
+
+```php
+Cache::spy();
+
+Cache::partialMock();
+```
+
+</td>
+<td>Not supported</td>
+</tr>
+<tr>
+<td>Short names for facades. Laravel registers aliases. Rust has <code>use</code>.</td>
+<td>
+
+```php
+// config/app.php
+'aliases' => Facade::defaultAliases()->merge([
+    'Cache' => Illuminate\Support\Facades\Cache::class,
+])->toArray(),
+```
+
+</td>
+<td>
+
+```rs
+use crate::facades::Cache;
+```
+
+</td>
+</tr>
+</tbody>
+</table>
 
 ## What the macro can forward
 
-| Trait method | Result |
-| --- | --- |
-| `fn f(&self, ...)` | Forwarded |
-| `fn f(self: Arc<Self>, ...)` | Forwarded |
-| `fn f<'a>(&self, x: &'a str) -> &'a str` | Forwarded |
-| `async fn f(&self, ...)` with `#[async_trait]` | Forwarded as `async fn`. Put `#[extends_facade]` above `#[async_trait]`. |
-| A method with `where Self: Sized` | Skipped. It is not callable on `dyn Trait`. |
-| `fn f(&self) -> &str` | Compile error. The borrow would outlive the root `Arc`. |
-| `fn f(&mut self)` | Compile error. The root is shared. |
-| A method named like a generated one, such as `swap` | Compile error |
-| A generic trait | Compile error |
+The macro looks at each trait method. It forwards it, skips it, or stops with a compile error.
+
+<table>
+<thead>
+<tr><th>Trait method</th><th>Example</th><th>Result</th><th>Static method or error</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>A <code>&amp;self</code> method</td>
+<td>
+
+```rs
+fn get(&self, key: &str) -> Option<String>;
+```
+
+</td>
+<td>Forwarded</td>
+<td>
+
+```rs
+pub fn get(key: &str) -> Option<String>
+```
+
+</td>
+</tr>
+<tr>
+<td>A <code>self: Arc&lt;Self&gt;</code> method. The facade passes its root <code>Arc</code>.</td>
+<td>
+
+```rs
+fn shared(self: Arc<Self>) -> usize;
+```
+
+</td>
+<td>Forwarded</td>
+<td>
+
+```rs
+pub fn shared() -> usize
+```
+
+</td>
+</tr>
+<tr>
+<td>A method that returns a borrow of an argument, with a named lifetime</td>
+<td>
+
+```rs
+fn first<'a>(&self, keys: &'a [String]) -> &'a str;
+```
+
+</td>
+<td>Forwarded</td>
+<td>
+
+```rs
+pub fn first<'a>(keys: &'a [String]) -> &'a str
+```
+
+</td>
+</tr>
+<tr>
+<td>An <code>async fn</code> under <code>#[async_trait]</code>, with <code>#[extends_facade]</code> above it</td>
+<td>
+
+```rs
+#[extends_facade(Http)]
+#[async_trait]
+pub trait HttpClient: Interface {
+    async fn get(&self, url: &str) -> String;
+}
+```
+
+</td>
+<td>Forwarded</td>
+<td>
+
+```rs
+pub async fn get(url: &str) -> String
+```
+
+</td>
+</tr>
+<tr>
+<td>A method with <code>where Self: Sized</code>. It is not callable on <code>dyn Trait</code>, so there is nothing to forward to.</td>
+<td>
+
+```rs
+fn new() -> Self
+where
+    Self: Sized;
+```
+
+</td>
+<td>Skipped</td>
+<td>No static method</td>
+</tr>
+<tr>
+<td>A method that returns a borrow of <code>self</code>. The borrow would outlive the root <code>Arc</code>.</td>
+<td>
+
+```rs
+fn name(&self) -> &str;
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+#[extends_facade] cannot forward a method that returns
+a borrow of `self`; return an owned value or name the
+lifetime of an argument
+```
+
+</td>
+</tr>
+<tr>
+<td>A <code>&amp;mut self</code> method. The root is shared.</td>
+<td>
+
+```rs
+fn increment(&mut self);
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+#[extends_facade] cannot forward `&mut self` methods:
+the facade root is shared behind `Arc`
+```
+
+</td>
+</tr>
+<tr>
+<td>A <code>self</code> method without <code>where Self: Sized</code></td>
+<td>
+
+```rs
+fn into_inner(self) -> String;
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+#[extends_facade] cannot forward `self` methods;
+add `where Self: Sized` to skip it
+```
+
+</td>
+</tr>
+<tr>
+<td>Any other receiver, such as <code>Box&lt;Self&gt;</code></td>
+<td>
+
+```rs
+fn boxed(self: Box<Self>);
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+#[extends_facade] can only forward `&self` and
+`self: Arc<Self>` methods
+```
+
+</td>
+</tr>
+<tr>
+<td>A method named like a generated one</td>
+<td>
+
+```rs
+fn swap(&self);
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+`swap` clashes with a method generated on every facade
+```
+
+</td>
+</tr>
+<tr>
+<td>A generic trait</td>
+<td>
+
+```rs
+#[extends_facade(Repo)]
+pub trait Repository<T>: Interface {
+    fn find(&self, id: u64) -> Option<T>;
+}
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+#[extends_facade] does not support generic traits
+```
+
+</td>
+</tr>
+<tr>
+<td><code>#[extends_facade]</code> below <code>#[async_trait]</code>. It would see the rewritten methods.</td>
+<td>
+
+```rs
+#[async_trait]
+#[extends_facade(Http)]
+pub trait HttpClient: Interface {
+    async fn get(&self, url: &str) -> String;
+}
+```
+
+</td>
+<td>Compile error</td>
+<td>
+
+```text
+#[extends_facade] must be placed above #[async_trait]
+```
+
+</td>
+</tr>
+</tbody>
+</table>
 
 ## License
 
