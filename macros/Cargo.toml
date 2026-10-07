@@ -1,6 +1,6 @@
 [package]
-name = "facade-rs-macros"
-description = "Procedural macros for facade-rs."
+name = "laravel-facade-macros"
+description = "Procedural macros for laravel-facade."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -18,6 +18,6 @@ syn = { version = "2", features = ["full", "visit"] }
 
 [dev-dependencies]
 async-trait = "0.1"
-facade-rs = { path = ".." }
+laravel-facade = { path = ".." }
 pollster = "1"
 shaku = "0.6"

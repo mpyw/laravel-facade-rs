@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use facade_rs::facade;
+use laravel_facade::facade;
 use shaku::Interface;
 
 #[async_trait]

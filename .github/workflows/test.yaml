@@ -54,7 +54,7 @@ jobs:
       - name: Restore cache
         uses: Swatinem/rust-cache@v2
       - name: Check
-        run: cargo check -p facade-rs -p facade-rs-macros
+        run: cargo check -p laravel-facade -p laravel-facade-macros
 
   # ===========================================================================
   # Nightly is where a change on its way to stable shows up first. Coverage is

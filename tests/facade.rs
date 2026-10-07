@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use facade_rs::{
+use laravel_facade::{
     Application, Error, Fake, clear_resolved_instances, facade, get_facade_application, set_facade_application,
 };
 use mockall::automock;
@@ -393,7 +393,7 @@ fn refuses_expectations_while_the_mock_is_held() {
     .unwrap_err();
     assert_eq!(
         panic.downcast_ref::<String>().unwrap(),
-        "facade-rs: cannot add expectations to the [dyn facade::CacheStore] mock while its root is still held elsewhere",
+        "laravel-facade: cannot add expectations to the [dyn facade::CacheStore] mock while its root is still held elsewhere",
     );
 
     drop(held);

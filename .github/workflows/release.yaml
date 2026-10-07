@@ -10,7 +10,7 @@ run-name: "Release ${{ inputs.version }}"
 # before the publish succeeded would burn the version number on a run that
 # failed half way. The order here is publish, then release.
 #
-# Two crates go out: `facade-rs-macros`, then `facade-rs`, which pins it with
+# Two crates go out: `laravel-facade-macros`, then `laravel-facade`, which pins it with
 # `=`. Each one is published only if crates.io does not have it yet, so a run
 # that stopped between them can be finished by running again.
 #
@@ -36,7 +36,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # In publish order: a crate comes after the crates it depends on.
-  CRATES: facade-rs-macros facade-rs
+  CRATES: laravel-facade-macros laravel-facade
 
 defaults:
   run:
@@ -96,7 +96,7 @@ jobs:
       - name: Run tests
         run: cargo test --workspace --all-targets && cargo test --workspace --doc
 
-      # `--workspace` packages `facade-rs` against the local `facade-rs-macros`,
+      # `--workspace` packages `laravel-facade` against the local `laravel-facade-macros`,
       # so this works before the macro crate is on crates.io.
       - name: Verify the packages
         run: cargo publish --workspace --dry-run
@@ -111,7 +111,7 @@ jobs:
           unpublished=()
           for crate in $CRATES; do
             code=$(curl -s -o /dev/null -w '%{http_code}' \
-              -H 'User-Agent: facade-rs release workflow' \
+              -H 'User-Agent: laravel-facade release workflow' \
               "https://crates.io/api/v1/crates/$crate/$VERSION")
             if [[ "$code" == "200" ]]; then
               echo "$crate $VERSION is already on crates.io"
@@ -233,6 +233,6 @@ jobs:
           printf '%s\n' \
             "| Crate | Install |" \
             "| --- | --- |" \
-            "| \`facade-rs\` | \`cargo add facade-rs\` |" \
-            "| \`facade-rs-macros\` | Pulled in by \`facade-rs\` |" > notes.md
+            "| \`laravel-facade\` | \`cargo add laravel-facade\` |" \
+            "| \`laravel-facade-macros\` | Pulled in by \`laravel-facade\` |" > notes.md
           gh release create "$VERSION" "${args[@]}" --notes-file notes.md

@@ -57,16 +57,16 @@ jobs:
         run: |
           metadata=$(cargo metadata --no-deps --format-version 1)
           status=0
-          for crate in facade-rs facade-rs-macros; do
+          for crate in laravel-facade laravel-facade-macros; do
             have=$(jq -r --arg c "$crate" '.packages[] | select(.name == $c) | .version' <<<"$metadata")
             if [[ "$have" != "$VERSION" ]]; then
               echo "Error: $crate says $have, and this run is for $VERSION"
               status=1
             fi
           done
-          pin=$(jq -r '.packages[] | select(.name == "facade-rs") | .dependencies[] | select(.name == "facade-rs-macros") | .req' <<<"$metadata")
+          pin=$(jq -r '.packages[] | select(.name == "laravel-facade") | .dependencies[] | select(.name == "laravel-facade-macros") | .req' <<<"$metadata")
           if [[ "$pin" != "=$VERSION" ]]; then
-            echo "Error: facade-rs depends on facade-rs-macros $pin, and this run is for =$VERSION"
+            echo "Error: laravel-facade depends on laravel-facade-macros $pin, and this run is for =$VERSION"
             status=1
           fi
           [[ $status == 0 ]] && echo "Both manifests say $VERSION"

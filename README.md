@@ -1,9 +1,9 @@
-# facade-rs
+# laravel-facade
 
-[![CI](https://github.com/mpyw/facade-rs/actions/workflows/test.yaml/badge.svg)](https://github.com/mpyw/facade-rs/actions/workflows/test.yaml)
-[![codecov](https://codecov.io/gh/mpyw/facade-rs/graph/badge.svg)](https://codecov.io/gh/mpyw/facade-rs)
-[![crates.io](https://img.shields.io/crates/v/facade-rs.svg)](https://crates.io/crates/facade-rs)
-[![docs.rs](https://docs.rs/facade-rs/badge.svg)](https://docs.rs/facade-rs)
+[![CI](https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml/badge.svg)](https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml)
+[![codecov](https://codecov.io/gh/mpyw/laravel-facade-rs/graph/badge.svg)](https://codecov.io/gh/mpyw/laravel-facade-rs)
+[![crates.io](https://img.shields.io/crates/v/laravel-facade.svg)](https://crates.io/crates/laravel-facade)
+[![docs.rs](https://docs.rs/laravel-facade/badge.svg)](https://docs.rs/laravel-facade)
 
 Laravel-style facades for the [shaku](https://docs.rs/shaku) DI container.
 
@@ -19,7 +19,7 @@ as closely as Rust allows.
 
 ```toml
 [dependencies]
-facade-rs = "0.1"
+laravel-facade = "0.1"
 shaku = "0.6"
 ```
 
@@ -34,7 +34,7 @@ Put `#[facade(Name)]` on a shaku interface trait. It generates a unit struct `Na
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use facade_rs::{Application, facade, set_facade_application};
+use laravel_facade::{Application, facade, set_facade_application};
 use shaku::{Component, Interface, module};
 
 #[facade(Cache)]
@@ -91,7 +91,7 @@ A swapped instance wins over the application. You do not even need an applicatio
 ```rust
 use std::sync::Mutex;
 
-use facade_rs::{Fake, clear_resolved_instances, facade};
+use laravel_facade::{Fake, clear_resolved_instances, facade};
 use mockall::automock;
 use mockall::predicate::eq;
 use shaku::Interface;
@@ -157,13 +157,13 @@ fn main() {
 > Reset the state at the end of each test:
 >
 > ```rust
-> facade_rs::clear_resolved_instances();
-> facade_rs::set_facade_application(None);
+> laravel_facade::clear_resolved_instances();
+> laravel_facade::set_facade_application(None);
 > ```
 
 ## Laravel mapping
 
-| Laravel | facade-rs |
+| Laravel | laravel-facade |
 | --- | --- |
 | `getFacadeAccessor()` | `type Accessor = dyn Trait`. The macro sets it. |
 | `__callStatic()` | One generated static method per trait method |

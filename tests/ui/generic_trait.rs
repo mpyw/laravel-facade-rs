@@ -1,4 +1,4 @@
-use facade_rs::facade;
+use laravel_facade::facade;
 use shaku::Interface;
 
 #[facade(Repo)]

@@ -22,7 +22,7 @@ pub(crate) fn unerase<I: ?Sized + Interface>(erased: &Erased) -> Arc<I> {
     Arc::clone(
         erased
             .downcast_ref::<Arc<I>>()
-            .expect("facade-rs: erased value has an unexpected type"),
+            .expect("laravel-facade: erased value has an unexpected type"),
     )
 }
 
@@ -36,7 +36,7 @@ pub(crate) fn unerase<I: ?Sized + Interface>(erased: &Erased) -> Arc<I> {
 ///
 /// ```
 /// # use std::sync::Arc;
-/// # use facade_rs::{Application, facade};
+/// # use laravel_facade::{Application, facade};
 /// # use shaku::{Interface, module};
 /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
 /// # struct NullStore;
@@ -48,7 +48,7 @@ pub(crate) fn unerase<I: ?Sized + Interface>(erased: &Erased) -> Arc<I> {
 ///     .bind::<dyn CacheStore>()
 ///     .build();
 ///
-/// facade_rs::set_facade_application(app);
+/// laravel_facade::set_facade_application(app);
 /// assert_eq!(Cache::get("key"), None);
 /// ```
 pub struct Application {
@@ -73,7 +73,7 @@ impl Application {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use facade_rs::{Application, facade};
+    /// # use laravel_facade::{Application, facade};
     /// # use shaku::{Interface, module};
     /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
@@ -83,7 +83,7 @@ impl Application {
     /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
     /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
     /// assert!(app.bound::<dyn CacheStore>());
-    /// # facade_rs::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     pub fn bound<I: ?Sized + Interface>(&self) -> bool {
         let id = TypeId::of::<I>();
@@ -96,7 +96,7 @@ impl Application {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use facade_rs::{Application, facade};
+    /// # use laravel_facade::{Application, facade};
     /// # use shaku::{Interface, module};
     /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
@@ -108,7 +108,7 @@ impl Application {
     /// assert!(!app.resolved::<dyn CacheStore>());
     /// app.make::<dyn CacheStore>().unwrap();
     /// assert!(app.resolved::<dyn CacheStore>());
-    /// # facade_rs::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     pub fn resolved<I: ?Sized + Interface>(&self) -> bool {
         let id = TypeId::of::<I>();
@@ -124,7 +124,7 @@ impl Application {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use facade_rs::{Application, facade};
+    /// # use laravel_facade::{Application, facade};
     /// # use shaku::{Interface, module};
     /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
@@ -135,7 +135,7 @@ impl Application {
     /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
     /// let cache = app.make::<dyn CacheStore>().unwrap();
     /// assert_eq!(cache.get("key"), None);
-    /// # facade_rs::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     pub fn make<I: ?Sized + Interface>(&self) -> Result<Arc<I>, Error> {
         let id = TypeId::of::<I>();
@@ -175,7 +175,7 @@ impl Application {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use facade_rs::{Application, facade};
+    /// # use laravel_facade::{Application, facade};
     /// # use shaku::{Interface, module};
     /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
@@ -196,7 +196,7 @@ impl Application {
     ///
     /// app.forget_instance::<dyn CacheStore>();
     /// assert_eq!(app.make::<dyn CacheStore>().unwrap().get("key"), None);
-    /// # facade_rs::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     pub fn instance<I: ?Sized + Interface>(&self, instance: Arc<I>) -> Arc<I> {
         let previous = write(&self.instances).insert(TypeId::of::<I>(), erase(Arc::clone(&instance)));
@@ -216,7 +216,7 @@ impl Application {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use facade_rs::{Application, facade};
+    /// # use laravel_facade::{Application, facade};
     /// # use shaku::{Interface, module};
     /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
@@ -234,7 +234,7 @@ impl Application {
     ///
     /// app.make::<dyn CacheStore>().unwrap();
     /// assert_eq!(BUILT.load(Ordering::SeqCst), 1);
-    /// # facade_rs::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     pub fn after_resolving<I: ?Sized + Interface>(
         &self,
@@ -285,7 +285,7 @@ impl<M: ModuleInterface> ApplicationBuilder<M> {
     /// use std::sync::Arc;
     /// use std::sync::atomic::{AtomicUsize, Ordering};
     ///
-    /// use facade_rs::{Application, facade};
+    /// use laravel_facade::{Application, facade};
     /// use shaku::{Interface, Module, Provider, module};
     ///
     /// #[facade(Uuid, cached = false)]
@@ -320,7 +320,7 @@ impl<M: ModuleInterface> ApplicationBuilder<M> {
     /// let app = Application::builder(AppModule::builder().build())
     ///     .bind_provider::<dyn IdGenerator>()
     ///     .build();
-    /// facade_rs::set_facade_application(app);
+    /// laravel_facade::set_facade_application(app);
     ///
     /// assert_eq!(Uuid::id(), 1);
     /// assert_eq!(Uuid::id(), 2);
