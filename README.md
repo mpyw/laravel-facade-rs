@@ -2,14 +2,18 @@
   <img src="https://raw.githubusercontent.com/mpyw/laravel-facade-rs/main/assets/logo.svg" alt="laravel-facade logo" width="160">
 </p>
 
-# laravel-facade
+<h1 align="center">laravel-facade</h1>
 
-[![CI](https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml/badge.svg)](https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml)
-[![codecov](https://codecov.io/gh/mpyw/laravel-facade-rs/graph/badge.svg)](https://codecov.io/gh/mpyw/laravel-facade-rs)
-[![crates.io](https://img.shields.io/crates/v/laravel-facade.svg)](https://crates.io/crates/laravel-facade)
-[![docs.rs](https://docs.rs/laravel-facade/badge.svg)](https://docs.rs/laravel-facade)
+<p align="center">
+  <a href="https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml"><img src="https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml/badge.svg" alt="CI"></a>
+  <a href="https://codecov.io/gh/mpyw/laravel-facade-rs"><img src="https://codecov.io/gh/mpyw/laravel-facade-rs/graph/badge.svg" alt="codecov"></a>
+  <a href="https://crates.io/crates/laravel-facade"><img src="https://img.shields.io/crates/v/laravel-facade.svg" alt="crates.io"></a>
+  <a href="https://docs.rs/laravel-facade"><img src="https://docs.rs/laravel-facade/badge.svg" alt="docs.rs"></a>
+</p>
 
-Laravel facades for Rust, on top of the [shaku](https://docs.rs/shaku) DI container.
+<p align="center">
+  Laravel facades for Rust, on top of the <a href="https://docs.rs/shaku">shaku</a> DI container.
+</p>
 
 This is a joke crate. It still follows
 [`Illuminate\Support\Facades\Facade`](https://github.com/illuminate/support/blob/master/Facades/Facade.php)
