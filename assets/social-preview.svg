@@ -124,7 +124,8 @@
 <polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00"/>
 </g>
 </g></svg>
-<g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+<!-- Shifted so the text block is centered vertically, like the logo. -->
+<g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" transform="translate(0 -36)">
   <text x="580" y="170" font-family="Menlo, SF Mono, Consolas, monospace" font-size="34" fill="#FF2D20">laravel-facade</text>
   <text x="580" y="262" font-size="72" font-weight="bold" fill="#ffffff">Facades. In Rust.</text>
   <text x="580" y="346" font-size="72" font-weight="bold" fill="#ffffff">On purpose.</text>

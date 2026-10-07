@@ -23,7 +23,8 @@ MONO = "Menlo, SF Mono, Consolas, monospace"
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
 <rect width="{W}" height="{H}" fill="#0d1117"/>
 <svg x="40" y="60" width="520" height="520" viewBox="{view_box}">{inner}</svg>
-<g font-family="{SANS}">
+<!-- Shifted so the text block is centered vertically, like the logo. -->
+<g font-family="{SANS}" transform="translate(0 -36)">
   <text x="580" y="170" font-family="{MONO}" font-size="34" fill="{RED}">laravel-facade</text>
   <text x="580" y="262" font-size="72" font-weight="bold" fill="#ffffff">Facades. In Rust.</text>
   <text x="580" y="346" font-size="72" font-weight="bold" fill="#ffffff">On purpose.</text>
