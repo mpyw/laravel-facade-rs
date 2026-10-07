@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mpyw/laravel-facade-rs/main/assets/logo.svg" alt="laravel-facade logo" width="160">
+</p>
+
 # laravel-facade
 
 [![CI](https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml/badge.svg)](https://github.com/mpyw/laravel-facade-rs/actions/workflows/test.yaml)

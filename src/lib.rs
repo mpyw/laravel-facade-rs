@@ -1,4 +1,8 @@
 #![doc = include_str!("../README.md")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/mpyw/laravel-facade-rs/main/assets/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/mpyw/laravel-facade-rs/main/assets/logo.svg"
+)]
 
 mod application;
 mod error;
