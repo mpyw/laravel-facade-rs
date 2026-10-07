@@ -117,6 +117,100 @@ So `Application` must know each interface up front:
 > A facade caches the first instance it resolves, like `static::$cached` in Laravel.
 > Use `#[extends_facade(Uuid, cached = false)]` to get a fresh provider instance on each call.
 
+<details>
+<summary>Generic values, such as <code>Cache::get::&lt;T&gt;()</code></summary>
+
+A facade calls its root through `dyn Trait`. So the trait cannot have generic methods.
+A generic method needs one copy per type, and a vtable cannot hold them all.
+
+Keep the trait type-erased instead. Then add typed entry points to the facade struct.
+It is a type of your own crate, so you can write an `impl` block for it.
+
+```rust
+use std::any::Any;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+use laravel_facade::{Application, Facade, extends_facade};
+use shaku::{Component, Interface, module};
+
+type Value = Arc<dyn Any + Send + Sync>;
+
+// The trait stays dyn-compatible: values are type-erased.
+#[extends_facade(Cache)]
+pub trait CacheStore: Interface {
+    fn get_value(&self, key: &str) -> Option<Value>;
+    fn put_value(&self, key: &str, value: Value);
+}
+
+// The typed entry points live on the facade struct.
+impl Cache {
+    pub fn get<T: Any + Clone>(key: &str) -> Option<T> {
+        Cache::get_value(key)?.downcast_ref::<T>().cloned()
+    }
+
+    pub fn put<T: Any + Send + Sync>(key: &str, value: T) {
+        Cache::put_value(key, Arc::new(value));
+    }
+}
+
+#[derive(Component)]
+#[shaku(interface = CacheStore)]
+struct ArrayStore {
+    #[shaku(default)]
+    items: Mutex<HashMap<String, Value>>,
+}
+
+impl CacheStore for ArrayStore {
+    fn get_value(&self, key: &str) -> Option<Value> {
+        self.items.lock().unwrap().get(key).cloned()
+    }
+
+    fn put_value(&self, key: &str, value: Value) {
+        self.items.lock().unwrap().insert(key.into(), value);
+    }
+}
+
+module! {
+    AppModule {
+        components = [ArrayStore],
+        providers = []
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct User {
+    name: String,
+}
+
+fn main() {
+    let app = Application::builder(AppModule::builder().build())
+        .bind::<dyn CacheStore>()
+        .build();
+    Facade::set_facade_application(app);
+
+    Cache::put("count", 42_u32);
+    Cache::put("user", User { name: "Taylor".into() });
+
+    assert_eq!(Cache::get::<u32>("count"), Some(42));
+    assert_eq!(Cache::get::<User>("user"), Some(User { name: "Taylor".into() }));
+
+    // A value of another type is a miss, not a panic.
+    assert_eq!(Cache::get::<String>("count"), None);
+}
+```
+
+The trait is still dyn-compatible. So `swap()`, `fake()`, and `#[automock]` work as before.
+
+Pick how to erase the value by where the store keeps it:
+
+| Store | Erase the value as | Bound on `T` |
+| --- | --- | --- |
+| In the process, like Laravel's `array` driver | `Arc<dyn Any + Send + Sync>` | `T: Any + Clone` |
+| Outside the process, like Redis | Bytes, through serde | `T: Serialize + DeserializeOwned` |
+
+</details>
+
 ## Testing
 
 A swapped instance wins over the application. You do not even need an application in tests.
