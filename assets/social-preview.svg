@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+<rect width="1280" height="640" fill="#0d1117"/>
+<svg x="40" y="60" width="520" height="520" viewBox="0 0 496.00 496.00">
+<defs>
+<mask id="m0" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+<polygon points="213.36,188.00 282.64,228.00 248.00,248.00 178.72,208.00" fill="black"/>
+<polygon points="178.72,248.00 248.00,288.00 248.00,248.00 178.72,208.00" fill="black"/>
+<polygon points="282.64,268.00 248.00,288.00 248.00,248.00 282.64,228.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 248.00,288.00 213.36,268.00" fill="black"/>
+<polygon points="213.36,308.00 248.00,328.00 248.00,288.00 213.36,268.00" fill="black"/>
+<polygon points="282.64,308.00 248.00,328.00 248.00,288.00 282.64,268.00" fill="black"/>
+<polygon points="282.64,308.00 317.28,328.00 282.64,348.00 248.00,328.00" fill="black"/>
+<polygon points="248.00,368.00 282.64,388.00 282.64,348.00 248.00,328.00" fill="black"/>
+<polygon points="317.28,368.00 282.64,388.00 282.64,348.00 317.28,328.00" fill="black"/>
+<polygon points="317.28,368.00 351.92,388.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="282.64,428.00 317.28,448.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="351.92,428.00 317.28,448.00 317.28,408.00 351.92,388.00" fill="black"/>
+<polygon points="213.36,68.00 282.64,108.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="178.72,128.00 248.00,168.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="282.64,148.00 248.00,168.00 248.00,128.00 282.64,108.00" fill="black"/>
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00" fill="black"/>
+</mask>
+<mask id="m1" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+<polygon points="248.00,248.00 282.64,268.00 248.00,288.00 213.36,268.00" fill="black"/>
+<polygon points="213.36,308.00 248.00,328.00 248.00,288.00 213.36,268.00" fill="black"/>
+<polygon points="282.64,308.00 248.00,328.00 248.00,288.00 282.64,268.00" fill="black"/>
+<polygon points="282.64,308.00 317.28,328.00 282.64,348.00 248.00,328.00" fill="black"/>
+<polygon points="248.00,368.00 282.64,388.00 282.64,348.00 248.00,328.00" fill="black"/>
+<polygon points="317.28,368.00 282.64,388.00 282.64,348.00 317.28,328.00" fill="black"/>
+<polygon points="317.28,368.00 351.92,388.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="282.64,428.00 317.28,448.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="351.92,428.00 317.28,448.00 317.28,408.00 351.92,388.00" fill="black"/>
+<polygon points="213.36,68.00 282.64,108.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="178.72,128.00 248.00,168.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="282.64,148.00 248.00,168.00 248.00,128.00 282.64,108.00" fill="black"/>
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00" fill="black"/>
+</mask>
+<mask id="m2" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+<polygon points="282.64,308.00 317.28,328.00 282.64,348.00 248.00,328.00" fill="black"/>
+<polygon points="248.00,368.00 282.64,388.00 282.64,348.00 248.00,328.00" fill="black"/>
+<polygon points="317.28,368.00 282.64,388.00 282.64,348.00 317.28,328.00" fill="black"/>
+<polygon points="317.28,368.00 351.92,388.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="282.64,428.00 317.28,448.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="351.92,428.00 317.28,448.00 317.28,408.00 351.92,388.00" fill="black"/>
+<polygon points="213.36,68.00 282.64,108.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="178.72,128.00 248.00,168.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="282.64,148.00 248.00,168.00 248.00,128.00 282.64,108.00" fill="black"/>
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00" fill="black"/>
+</mask>
+<mask id="m3" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+<polygon points="317.28,368.00 351.92,388.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="282.64,428.00 317.28,448.00 317.28,408.00 282.64,388.00" fill="black"/>
+<polygon points="351.92,428.00 317.28,448.00 317.28,408.00 351.92,388.00" fill="black"/>
+<polygon points="213.36,68.00 282.64,108.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="178.72,128.00 248.00,168.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="282.64,148.00 248.00,168.00 248.00,128.00 282.64,108.00" fill="black"/>
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00" fill="black"/>
+</mask>
+<mask id="m4" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+<polygon points="213.36,68.00 282.64,108.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="178.72,128.00 248.00,168.00 248.00,128.00 178.72,88.00" fill="black"/>
+<polygon points="282.64,148.00 248.00,168.00 248.00,128.00 282.64,108.00" fill="black"/>
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00" fill="black"/>
+</mask>
+<mask id="m5" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00" fill="black"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00" fill="black"/>
+</mask>
+<mask id="m6" maskUnits="userSpaceOnUse" x="0" y="0" width="496.00" height="496.00">
+<rect x="0" y="0" width="496.00" height="496.00" fill="white"/>
+</mask>
+</defs>
+<g fill="none" stroke="#FF2D20" stroke-width="4.80" stroke-linejoin="round" stroke-linecap="round">
+<g mask="url(#m0)">
+<polygon points="178.72,48.00 213.36,68.00 178.72,88.00 144.08,68.00"/>
+<polygon points="144.08,348.00 178.72,368.00 178.72,88.00 144.08,68.00"/>
+<polygon points="213.36,348.00 178.72,368.00 178.72,88.00 213.36,68.00"/>
+</g>
+<g mask="url(#m1)">
+<polygon points="213.36,188.00 282.64,228.00 248.00,248.00 178.72,208.00"/>
+<polygon points="178.72,248.00 248.00,288.00 248.00,248.00 178.72,208.00"/>
+<polygon points="282.64,268.00 248.00,288.00 248.00,248.00 282.64,228.00"/>
+</g>
+<g mask="url(#m2)">
+<polygon points="248.00,248.00 282.64,268.00 248.00,288.00 213.36,268.00"/>
+<polygon points="213.36,308.00 248.00,328.00 248.00,288.00 213.36,268.00"/>
+<polygon points="282.64,308.00 248.00,328.00 248.00,288.00 282.64,268.00"/>
+</g>
+<g mask="url(#m3)">
+<polygon points="282.64,308.00 317.28,328.00 282.64,348.00 248.00,328.00"/>
+<polygon points="248.00,368.00 282.64,388.00 282.64,348.00 248.00,328.00"/>
+<polygon points="317.28,368.00 282.64,388.00 282.64,348.00 317.28,328.00"/>
+</g>
+<g mask="url(#m4)">
+<polygon points="317.28,368.00 351.92,388.00 317.28,408.00 282.64,388.00"/>
+<polygon points="282.64,428.00 317.28,448.00 317.28,408.00 282.64,388.00"/>
+<polygon points="351.92,428.00 317.28,448.00 317.28,408.00 351.92,388.00"/>
+</g>
+<g mask="url(#m5)">
+<polygon points="213.36,68.00 282.64,108.00 248.00,128.00 178.72,88.00"/>
+<polygon points="178.72,128.00 248.00,168.00 248.00,128.00 178.72,88.00"/>
+<polygon points="282.64,148.00 248.00,168.00 248.00,128.00 282.64,108.00"/>
+</g>
+<g mask="url(#m6)">
+<polygon points="282.64,108.00 317.28,128.00 282.64,148.00 248.00,128.00"/>
+<polygon points="248.00,248.00 282.64,268.00 282.64,148.00 248.00,128.00"/>
+<polygon points="317.28,248.00 282.64,268.00 282.64,148.00 317.28,128.00"/>
+</g>
+</g></svg>
+<g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <text x="580" y="170" font-family="Menlo, SF Mono, Consolas, monospace" font-size="34" fill="#FF2D20">laravel-facade</text>
+  <text x="580" y="262" font-size="72" font-weight="bold" fill="#ffffff">Facades. In Rust.</text>
+  <text x="580" y="346" font-size="72" font-weight="bold" fill="#ffffff">On purpose.</text>
+  <text x="580" y="420" font-size="32" fill="#8b949e">Static calls. Global state. Zero regrets.</text>
+  <text x="580" y="462" font-size="32" fill="#8b949e">The borrow checker was not consulted.</text>
+  <rect x="580" y="508" width="372" height="64" rx="12" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+  <text x="604" y="550" font-family="Menlo, SF Mono, Consolas, monospace" font-size="30" fill="#e6edf3">Cache::<tspan fill="#FF2D20">get</tspan>(<tspan fill="#a5d6ff">"key"</tspan>);</text>
+</g>
+</svg>
