@@ -1,6 +1,7 @@
 [package]
 name = "laravel-facade-macros"
 description = "Procedural macros for laravel-facade."
+include = ["src/**", "LICENSE"]
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
