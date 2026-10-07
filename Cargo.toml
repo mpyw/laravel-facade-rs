@@ -17,7 +17,7 @@ authors.workspace = true
 members = ["macros"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.88"
 license = "MIT"
@@ -25,7 +25,7 @@ repository = "https://github.com/mpyw/laravel-facade-rs"
 authors = ["mpyw"]
 
 [dependencies]
-laravel-facade-macros = { version = "=0.1.0", path = "macros" }
+laravel-facade-macros = { version = "=0.1.1", path = "macros" }
 shaku = "0.6"
 
 [dev-dependencies]
