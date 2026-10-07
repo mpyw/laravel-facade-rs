@@ -1,4 +1,4 @@
-error: #[facade] does not support generic traits
+error: #[extends_facade] does not support generic traits
  --> tests/ui/generic_trait.rs:5:21
   |
 5 | pub trait Repository<T>: Interface {

@@ -1,7 +1,7 @@
-use laravel_facade::facade;
+use laravel_facade::extends_facade;
 use shaku::Interface;
 
-#[facade(Cache, cache = false)]
+#[extends_facade(Cache, cache = false)]
 pub trait CacheStore: Interface {
     fn get(&self, key: &str) -> Option<String>;
 }

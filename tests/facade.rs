@@ -3,15 +3,13 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use laravel_facade::{
-    Application, Error, Fake, clear_resolved_instances, facade, get_facade_application, set_facade_application,
-};
+use laravel_facade::{Application, Error, Facade, Fake, extends_facade};
 use mockall::automock;
 use mockall::predicate::eq;
 use serial_test::serial;
 use shaku::{Component, Interface, Provider, module};
 
-#[facade(Cache)]
+#[extends_facade(Cache)]
 #[automock]
 pub trait CacheStore: Interface {
     /// Gets a value.
@@ -20,7 +18,7 @@ pub trait CacheStore: Interface {
 }
 
 /// Covers the receiver and signature shapes that mockall cannot mock.
-#[facade(Strings)]
+#[extends_facade(Strings)]
 pub trait StringTools: Interface {
     // Eliding 'a would tie the result to `self`, which a facade cannot forward.
     #[allow(clippy::needless_lifetimes)]
@@ -70,7 +68,7 @@ impl CacheStore for ArrayStore {
 
 static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
 
-#[facade(Uuid, cached = false)]
+#[extends_facade(Uuid, cached = false)]
 pub trait IdGenerator: Interface {
     fn id(&self) -> usize;
 }
@@ -95,7 +93,7 @@ impl IdGenerator for CountingGenerator {
     }
 }
 
-#[facade(Http)]
+#[extends_facade(Http)]
 #[async_trait]
 pub trait HttpClient: Interface {
     async fn get(&self, url: &str) -> String;
@@ -112,7 +110,7 @@ impl HttpClient for FakeHttp {
     }
 }
 
-#[facade(Unbound)]
+#[extends_facade(Unbound)]
 pub trait NotBound: Interface {
     fn nothing(&self);
 }
@@ -125,20 +123,20 @@ module! {
 }
 
 fn boot() -> Arc<Application> {
-    clear_resolved_instances();
+    Facade::clear_resolved_instances();
     let app = Application::builder(AppModule::builder().build())
         .bind::<dyn CacheStore>()
         .bind::<dyn HttpClient>()
         .bind::<dyn StringTools>()
         .bind_provider::<dyn IdGenerator>()
         .build();
-    set_facade_application(Arc::clone(&app));
+    Facade::set_facade_application(Arc::clone(&app));
     app
 }
 
 fn teardown() {
-    clear_resolved_instances();
-    set_facade_application(None);
+    Facade::clear_resolved_instances();
+    Facade::set_facade_application(None);
 }
 
 #[test]
@@ -342,7 +340,7 @@ fn forwards_async_trait_methods() {
 fn exposes_the_application() {
     let app = boot();
 
-    assert!(Arc::ptr_eq(&get_facade_application().unwrap(), &app));
+    assert!(Arc::ptr_eq(&Facade::get_facade_application().unwrap(), &app));
     assert!(app.bound::<dyn CacheStore>());
     assert!(!app.bound::<dyn NotBound>());
     assert_eq!(Cache::get_facade_accessor(), "dyn facade::CacheStore");
@@ -353,11 +351,11 @@ fn exposes_the_application() {
 #[test]
 #[serial]
 fn reports_provider_errors() {
-    clear_resolved_instances();
+    Facade::clear_resolved_instances();
     let module = AppModule::builder()
         .with_provider_override::<dyn IdGenerator>(Box::new(|_| Err("database is down".into())))
         .build();
-    set_facade_application(Application::builder(module).bind_provider::<dyn IdGenerator>().build());
+    Facade::set_facade_application(Application::builder(module).bind_provider::<dyn IdGenerator>().build());
 
     let error = Uuid::try_get_facade_root().err().unwrap();
     assert_eq!(

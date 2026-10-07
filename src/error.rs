@@ -8,9 +8,9 @@ use std::fmt;
 ///
 /// ```
 /// # use std::sync::Arc;
-/// # use laravel_facade::{Application, facade};
+/// # use laravel_facade::{Application, extends_facade};
 /// # use shaku::{Interface, module};
-/// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+/// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
 /// # struct NullStore;
 /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
 /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
@@ -21,12 +21,12 @@ use std::fmt;
 /// let err = Cache::try_get_facade_root().err().unwrap();
 /// assert_eq!(err, Error::FacadeRootNotSet);
 /// assert_eq!(err.to_string(), "A facade root has not been set.");
-/// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+/// # laravel_facade::Facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Error {
-    /// No application was set with [`set_facade_application`](crate::set_facade_application),
+    /// No application was set with [`Facade::set_facade_application`](crate::Facade::set_facade_application),
     /// and nothing was swapped in.
     FacadeRootNotSet,
     /// The application has no binding for the accessor.

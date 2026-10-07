@@ -38,9 +38,9 @@ enum Kind {
 ///
 /// ```
 /// # use std::sync::Arc;
-/// # use laravel_facade::{Application, facade};
+/// # use laravel_facade::{Application, extends_facade};
 /// # use shaku::{Interface, module};
-/// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+/// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
 /// # struct NullStore;
 /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
 /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
@@ -63,71 +63,90 @@ enum Kind {
 /// ```
 pub trait Fake {}
 
-/// Sets the application behind all facades. Same as `Facade::setFacadeApplication()`.
+/// The base of all facades. Same as `Illuminate\Support\Facades\Facade`.
 ///
-/// Pass `None` to unset it. The old application is dropped after the lock is
-/// released, so mock expectations held by it are checked here.
+/// It holds the static methods that Laravel calls on the base class, such as
+/// `Facade::setFacadeApplication()`. It has no values, like an abstract class.
 ///
-/// # Examples
-///
-/// ```
-/// # use std::sync::Arc;
-/// # use laravel_facade::{Application, facade};
-/// # use shaku::{Interface, module};
-/// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
-/// # struct NullStore;
-/// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
-/// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
-/// # module! { AppModule { components = [NullStore], providers = [] } }
-/// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
-/// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
-/// laravel_facade::set_facade_application(Arc::clone(&app));
-/// assert!(laravel_facade::get_facade_application().is_some());
-///
-/// laravel_facade::set_facade_application(None);
-/// assert!(laravel_facade::get_facade_application().is_none());
-/// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
-/// ```
-pub fn set_facade_application(app: impl Into<Option<Arc<Application>>>) {
-    let previous = std::mem::replace(&mut *write(&APP), app.into());
-    drop(previous);
+/// Each facade struct implements [`ExtendsFacade`] instead.
+#[allow(missing_debug_implementations)]
+pub enum Facade {}
+
+impl Facade {
+    /// Sets the application behind all facades. Same as `Facade::setFacadeApplication()`.
+    ///
+    /// Pass `None` to unset it. The old application is dropped after the lock is
+    /// released, so mock expectations held by it are checked here.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::sync::Arc;
+    /// # use laravel_facade::{Application, extends_facade};
+    /// # use shaku::{Interface, module};
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # struct NullStore;
+    /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
+    /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
+    /// # module! { AppModule { components = [NullStore], providers = [] } }
+    /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
+    /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
+    /// laravel_facade::Facade::set_facade_application(Arc::clone(&app));
+    /// assert!(laravel_facade::Facade::get_facade_application().is_some());
+    ///
+    /// laravel_facade::Facade::set_facade_application(None);
+    /// assert!(laravel_facade::Facade::get_facade_application().is_none());
+    /// # laravel_facade::Facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// ```
+    pub fn set_facade_application(app: impl Into<Option<Arc<Application>>>) {
+        let previous = std::mem::replace(&mut *write(&APP), app.into());
+        drop(previous);
+    }
+
+    /// Returns the application behind all facades. Same as `Facade::getFacadeApplication()`.
+    pub fn get_facade_application() -> Option<Arc<Application>> {
+        read(&APP).clone()
+    }
+
+    /// Clears all resolved instances. Same as `Facade::clearResolvedInstances()`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::sync::Arc;
+    /// # use laravel_facade::{Application, extends_facade};
+    /// # use shaku::{Interface, module};
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # struct NullStore;
+    /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
+    /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
+    /// # module! { AppModule { components = [NullStore], providers = [] } }
+    /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
+    /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
+    /// # laravel_facade::Facade::set_facade_application(Arc::clone(&app));
+    /// let first = Cache::get_facade_root();
+    /// laravel_facade::Facade::clear_resolved_instances();
+    /// // The component is a singleton in the module, so it is the same instance.
+    /// assert!(Arc::ptr_eq(&first, &Cache::get_facade_root()));
+    /// # laravel_facade::Facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// ```
+    pub fn clear_resolved_instances() {
+        let previous = std::mem::take(&mut *write(&RESOLVED_INSTANCES));
+        drop(previous);
+    }
+
+    /// Clears the cached instance of one accessor. Same as `Facade::clearResolvedInstance($name)`.
+    ///
+    /// [`ExtendsFacade::clear_resolved_instance`] calls this with its own accessor.
+    pub fn clear_resolved_instance<I: ?Sized + Interface>() {
+        let previous = write(&RESOLVED_INSTANCES).remove(&TypeId::of::<I>());
+        drop(previous);
+    }
 }
 
-/// Returns the application behind all facades. Same as `Facade::getFacadeApplication()`.
-pub fn get_facade_application() -> Option<Arc<Application>> {
-    read(&APP).clone()
-}
-
-/// Clears all resolved instances. Same as `Facade::clearResolvedInstances()`.
+/// A facade: a static proxy to a shaku interface. Same as `class Cache extends Facade`.
 ///
-/// # Examples
-///
-/// ```
-/// # use std::sync::Arc;
-/// # use laravel_facade::{Application, facade};
-/// # use shaku::{Interface, module};
-/// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
-/// # struct NullStore;
-/// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
-/// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
-/// # module! { AppModule { components = [NullStore], providers = [] } }
-/// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
-/// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
-/// # laravel_facade::set_facade_application(Arc::clone(&app));
-/// let first = Cache::get_facade_root();
-/// laravel_facade::clear_resolved_instances();
-/// // The component is a singleton in the module, so it is the same instance.
-/// assert!(Arc::ptr_eq(&first, &Cache::get_facade_root()));
-/// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
-/// ```
-pub fn clear_resolved_instances() {
-    let previous = std::mem::take(&mut *write(&RESOLVED_INSTANCES));
-    drop(previous);
-}
-
-/// A facade: a static proxy to a shaku interface.
-///
-/// You do not implement this by hand. `#[facade(Name)]` on the interface
+/// You do not implement this by hand. `#[extends_facade(Name)]` on the interface
 /// trait generates the struct, this impl, and the static methods.
 ///
 /// Each provided method here is also generated as an inherent method on the
@@ -137,25 +156,25 @@ pub fn clear_resolved_instances() {
 ///
 /// ```
 /// # use std::sync::Arc;
-/// # use laravel_facade::{Application, facade};
+/// # use laravel_facade::{Application, extends_facade};
 /// # use shaku::{Interface, module};
-/// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+/// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
 /// # struct NullStore;
 /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
 /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
 /// # module! { AppModule { components = [NullStore], providers = [] } }
 /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
-/// use laravel_facade::Facade;
+/// use laravel_facade::ExtendsFacade;
 ///
 /// // Generic code can take any facade.
-/// fn accessor_of<F: Facade>() -> &'static str {
+/// fn accessor_of<F: ExtendsFacade>() -> &'static str {
 ///     F::get_facade_accessor()
 /// }
 ///
 /// assert!(accessor_of::<Cache>().ends_with("CacheStore"));
-/// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+/// # laravel_facade::Facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
 /// ```
-pub trait Facade {
+pub trait ExtendsFacade {
     /// The interface behind the facade. Same as `getFacadeAccessor()`.
     type Accessor: ?Sized + Interface;
 
@@ -178,19 +197,19 @@ pub trait Facade {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use laravel_facade::{Application, facade};
+    /// # use laravel_facade::{Application, extends_facade};
     /// # use shaku::{Interface, module};
-    /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
     /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
     /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
     /// # module! { AppModule { components = [NullStore], providers = [] } }
     /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
     /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
-    /// # laravel_facade::set_facade_application(Arc::clone(&app));
+    /// # laravel_facade::Facade::set_facade_application(Arc::clone(&app));
     /// let cache = Cache::get_facade_root();
     /// assert_eq!(cache.get("key"), None);
-    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::Facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     fn get_facade_root() -> Arc<Self::Accessor> {
         Self::try_get_facade_root().unwrap_or_else(|e| panic!("{e}"))
@@ -202,9 +221,9 @@ pub trait Facade {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use laravel_facade::{Application, facade};
+    /// # use laravel_facade::{Application, extends_facade};
     /// # use shaku::{Interface, module};
-    /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
     /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
     /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
@@ -213,7 +232,7 @@ pub trait Facade {
     /// use laravel_facade::Error;
     ///
     /// assert_eq!(Cache::try_get_facade_root().err(), Some(Error::FacadeRootNotSet));
-    /// # laravel_facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
+    /// # laravel_facade::Facade::clear_resolved_instances(); Cache::swap(Arc::new(NullStore)); assert_eq!(Cache::get(""), None);
     /// ```
     fn try_get_facade_root() -> Result<Arc<Self::Accessor>, Error> {
         resolve_facade_instance::<Self::Accessor>(Self::CACHED)
@@ -225,9 +244,9 @@ pub trait Facade {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use laravel_facade::{Application, facade};
+    /// # use laravel_facade::{Application, extends_facade};
     /// # use shaku::{Interface, module};
-    /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
     /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
     /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
@@ -263,16 +282,16 @@ pub trait Facade {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use laravel_facade::{Application, facade};
+    /// # use laravel_facade::{Application, extends_facade};
     /// # use shaku::{Interface, module};
-    /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
     /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
     /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
     /// # module! { AppModule { components = [NullStore], providers = [] } }
     /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
     /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
-    /// # laravel_facade::set_facade_application(Arc::clone(&app));
+    /// # laravel_facade::Facade::set_facade_application(Arc::clone(&app));
     /// struct HitStore;
     /// impl CacheStore for HitStore {
     ///     fn get(&self, _: &str) -> Option<String> {
@@ -288,8 +307,7 @@ pub trait Facade {
     /// assert_eq!(Cache::get("key"), None);
     /// ```
     fn clear_resolved_instance() {
-        let previous = write(&RESOLVED_INSTANCES).remove(&TypeId::of::<Self::Accessor>());
-        drop(previous);
+        Facade::clear_resolved_instance::<Self::Accessor>();
     }
 
     /// Runs a callback when the facade root is resolved. Same as `resolved()`.
@@ -304,23 +322,23 @@ pub trait Facade {
     ///
     /// ```
     /// # use std::sync::Arc;
-    /// # use laravel_facade::{Application, facade};
+    /// # use laravel_facade::{Application, extends_facade};
     /// # use shaku::{Interface, module};
-    /// # #[facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
+    /// # #[extends_facade(Cache)] pub trait CacheStore: Interface { fn get(&self, key: &str) -> Option<String>; }
     /// # struct NullStore;
     /// # impl<M: shaku::Module> shaku::Component<M> for NullStore { type Interface = dyn CacheStore; type Parameters = (); fn build(_: &mut shaku::ModuleBuildContext<M>, _: ()) -> Box<dyn CacheStore> { Box::new(NullStore) } }
     /// # impl CacheStore for NullStore { fn get(&self, _: &str) -> Option<String> { None } }
     /// # module! { AppModule { components = [NullStore], providers = [] } }
     /// # { use shaku::HasComponent; let module = AppModule::builder().build(); assert_eq!(HasComponent::<dyn CacheStore>::resolve(&module).get(""), None); }
     /// # let app = Application::builder(AppModule::builder().build()).bind::<dyn CacheStore>().build();
-    /// # laravel_facade::set_facade_application(Arc::clone(&app));
+    /// # laravel_facade::Facade::set_facade_application(Arc::clone(&app));
     /// Cache::resolved(|cache, _app| {
     ///     println!("resolved: {:?}", cache.get("key"));
     /// });
     /// Cache::get("key"); // prints "resolved: None"
     /// ```
     fn resolved(callback: impl Fn(&Arc<Self::Accessor>, &Application) + Send + Sync + 'static) {
-        let app = get_facade_application().unwrap_or_else(|| panic!("{}", Error::FacadeRootNotSet));
+        let app = Facade::get_facade_application().unwrap_or_else(|| panic!("{}", Error::FacadeRootNotSet));
         let callback = Arc::new(callback);
 
         if app.resolved::<Self::Accessor>() {
@@ -338,7 +356,7 @@ fn resolve_facade_instance<I: ?Sized + Interface>(cached: bool) -> Result<Arc<I>
         return Ok(unerase(&resolved.instance));
     }
 
-    let app = get_facade_application().ok_or(Error::FacadeRootNotSet)?;
+    let app = Facade::get_facade_application().ok_or(Error::FacadeRootNotSet)?;
     let instance = app.make::<I>()?;
 
     if !cached {
@@ -364,23 +382,23 @@ fn swap_with_kind<I: ?Sized + Interface>(instance: Arc<I>, kind: Kind) {
     );
     drop(previous);
 
-    if let Some(app) = get_facade_application() {
+    if let Some(app) = Facade::get_facade_application() {
         app.instance(instance);
     }
 }
 
-/// Support code for `#[facade]`. Not public API.
+/// Support code for `#[extends_facade]`. Not public API.
 #[doc(hidden)]
 pub mod __private {
     use super::*;
 
-    pub fn fake<F: Facade + ?Sized>(instance: Arc<F::Accessor>) {
+    pub fn fake<F: ExtendsFacade + ?Sized>(instance: Arc<F::Accessor>) {
         swap_with_kind(instance, Kind::Fake);
     }
 
     pub fn should_receive<F, M, R>(upcast: fn(Arc<M>) -> Arc<F::Accessor>, expect: impl FnOnce(&mut M) -> R) -> R
     where
-        F: Facade + ?Sized,
+        F: ExtendsFacade + ?Sized,
         M: Interface + Default,
     {
         let id = TypeId::of::<F::Accessor>();
@@ -407,7 +425,7 @@ pub mod __private {
         };
 
         // swap() also stored a clone in the application.
-        if let Some(app) = get_facade_application() {
+        if let Some(app) = Facade::get_facade_application() {
             app.forget_instance::<F::Accessor>();
         }
 

@@ -28,16 +28,17 @@ shaku = "0.6"
 
 ## Quick start
 
-Put `#[facade(Name)]` on a shaku interface trait. It generates a unit struct `Name` with one static method per trait method.
+Put `#[extends_facade(Name)]` on a shaku interface trait. It generates a unit struct `Name` with one static method per trait method.
+Read `#[extends_facade(Cache)]` as `class Cache extends Facade`.
 
 ```rust
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use laravel_facade::{Application, facade, set_facade_application};
+use laravel_facade::{Application, Facade, extends_facade};
 use shaku::{Component, Interface, module};
 
-#[facade(Cache)]
+#[extends_facade(Cache)]
 pub trait CacheStore: Interface {
     fn get(&self, key: &str) -> Option<String>;
     fn put(&self, key: &str, value: &str);
@@ -71,7 +72,7 @@ fn main() {
     let app = Application::builder(AppModule::builder().build())
         .bind::<dyn CacheStore>()
         .build();
-    set_facade_application(app);
+    Facade::set_facade_application(app);
 
     Cache::put("framework", "Laravel");
     assert_eq!(Cache::get("framework").as_deref(), Some("Laravel"));
@@ -91,12 +92,12 @@ A swapped instance wins over the application. You do not even need an applicatio
 ```rust
 use std::sync::Mutex;
 
-use laravel_facade::{Fake, clear_resolved_instances, facade};
+use laravel_facade::{Facade, Fake, extends_facade};
 use mockall::automock;
 use mockall::predicate::eq;
 use shaku::Interface;
 
-#[facade(Mail)]
+#[extends_facade(Mail)]
 #[automock]
 pub trait Mailer: Interface {
     fn send(&self, to: &str, body: &str) -> bool;
@@ -137,7 +138,7 @@ fn main() {
     assert!(!send_welcome("taylor@example.com"));
 
     // Mockery::close(): drops the mock, and mockall checks `times(1)`.
-    clear_resolved_instances();
+    Facade::clear_resolved_instances();
 }
 ```
 
@@ -157,24 +158,26 @@ fn main() {
 > Reset the state at the end of each test:
 >
 > ```rust
-> laravel_facade::clear_resolved_instances();
-> laravel_facade::set_facade_application(None);
+> laravel_facade::Facade::clear_resolved_instances();
+> laravel_facade::Facade::set_facade_application(None);
 > ```
 
 ## Laravel mapping
 
 | Laravel | laravel-facade |
 | --- | --- |
+| `abstract class Facade` | `enum Facade {}`. It has no values, and holds the base class statics. |
+| `class Cache extends Facade` | `impl ExtendsFacade for Cache`. The macro writes it. |
 | `getFacadeAccessor()` | `type Accessor = dyn Trait`. The macro sets it. |
 | `__callStatic()` | One generated static method per trait method |
-| `static::$cached` | `#[facade(Name, cached = false)]` |
-| `setFacadeApplication()` / `getFacadeApplication()` | `set_facade_application()` / `get_facade_application()` |
+| `static::$cached` | `#[extends_facade(Name, cached = false)]` |
+| `Facade::setFacadeApplication()` / `Facade::getFacadeApplication()` | `Facade::set_facade_application()` / `Facade::get_facade_application()` |
 | `getFacadeRoot()` | `Name::get_facade_root()`. It panics with `A facade root has not been set.` |
 | `swap()` | `Name::swap()`. It also calls `Application::instance()`. |
 | `isFake()` | `Name::is_fake()`, with the `Fake` marker trait |
 | `shouldReceive()` / `expects()` | `Name::should_receive()` / `Name::expects()` |
 | `resolved()` | `Name::resolved(\|root, app\| ...)` |
-| `clearResolvedInstance()` / `clearResolvedInstances()` | `Name::clear_resolved_instance()` / `clear_resolved_instances()` |
+| `clearResolvedInstance()` / `Facade::clearResolvedInstances()` | `Name::clear_resolved_instance()` / `Facade::clear_resolved_instances()` |
 | `spy()` / `partialMock()` | Not supported. mockall has no spies. |
 | `defaultAliases()` | `use app::facades::Cache;` |
 
@@ -184,7 +187,7 @@ fn main() {
 | --- | --- |
 | `fn f(&self, ...)` | Forwarded |
 | `fn f(self: Arc<Self>, ...)` | Forwarded |
-| `async fn f(&self, ...)` with `#[async_trait]` | Forwarded as `async fn`. Put `#[facade]` above `#[async_trait]`. |
+| `async fn f(&self, ...)` with `#[async_trait]` | Forwarded as `async fn`. Put `#[extends_facade]` above `#[async_trait]`. |
 | `fn f<'a>(&self, x: &'a str) -> &'a str` | Forwarded |
 | Methods with `where Self: Sized` | Skipped. They are not callable on `dyn Trait`. |
 | `fn f(&self) -> &str` | Compile error. The borrow would outlive the root `Arc`. |

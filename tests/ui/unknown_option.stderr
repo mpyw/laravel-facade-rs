@@ -1,5 +1,5 @@
 error: unknown option; expected `cached` or `crate`
- --> tests/ui/unknown_option.rs:4:17
+ --> tests/ui/unknown_option.rs:4:25
   |
-4 | #[facade(Cache, cache = false)]
-  |                 ^^^^^
+4 | #[extends_facade(Cache, cache = false)]
+  |                         ^^^^^

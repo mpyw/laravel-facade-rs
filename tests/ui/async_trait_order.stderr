@@ -1,4 +1,4 @@
-error: #[facade] must be placed above #[async_trait]
+error: #[extends_facade] must be placed above #[async_trait]
  --> tests/ui/async_trait_order.rs:8:14
   |
 8 |     async fn get(&self, url: &str) -> String;

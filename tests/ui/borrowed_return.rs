@@ -1,7 +1,7 @@
-use laravel_facade::facade;
+use laravel_facade::extends_facade;
 use shaku::Interface;
 
-#[facade(Config)]
+#[extends_facade(Config)]
 pub trait ConfigRepository: Interface {
     fn name(&self) -> &str;
 }

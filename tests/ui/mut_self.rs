@@ -1,7 +1,7 @@
-use laravel_facade::facade;
+use laravel_facade::extends_facade;
 use shaku::Interface;
 
-#[facade(Counter)]
+#[extends_facade(Counter)]
 pub trait CounterStore: Interface {
     fn increment(&mut self);
 }

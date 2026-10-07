@@ -1,7 +1,7 @@
-use laravel_facade::facade;
+use laravel_facade::extends_facade;
 use shaku::Interface;
 
-#[facade(Cache)]
+#[extends_facade(Cache)]
 pub trait CacheStore: Interface {
     fn swap(&self);
 }
