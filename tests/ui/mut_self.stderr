@@ -1,0 +1,5 @@
+error: #[facade] cannot forward `&mut self` methods: the facade root is shared behind `Arc`
+ --> tests/ui/mut_self.rs:6:23
+  |
+6 |     fn increment(&mut self);
+  |                       ^^^^

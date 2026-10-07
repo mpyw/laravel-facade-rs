@@ -1,0 +1,5 @@
+error: #[facade] cannot forward a method that returns a borrow of `self`; return an owned value or name the lifetime of an argument
+ --> tests/ui/borrowed_return.rs:6:23
+  |
+6 |     fn name(&self) -> &str;
+  |                       ^

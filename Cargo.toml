@@ -1,0 +1,34 @@
+
+[package]
+name = "facade-rs"
+description = "Laravel-style facades for the shaku DI container. Cache::get(\"key\") in Rust."
+keywords = ["facade", "laravel", "shaku", "dependency-injection", "joke"]
+categories = ["rust-patterns"]
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+[workspace]
+members = ["macros"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT"
+repository = "https://github.com/mpyw/facade-rs"
+authors = ["mpyw"]
+
+[dependencies]
+facade-rs-macros = { version = "=0.1.0", path = "macros" }
+shaku = "0.6"
+
+[dev-dependencies]
+async-trait = "0.1"
+mockall = "0.15"
+pollster = "1"
+serial_test = "4"
+trybuild = "1"

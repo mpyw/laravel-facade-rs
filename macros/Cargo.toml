@@ -1,0 +1,23 @@
+[package]
+name = "facade-rs-macros"
+description = "Procedural macros for facade-rs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full", "visit"] }
+
+[dev-dependencies]
+async-trait = "0.1"
+facade-rs = { path = ".." }
+pollster = "1"
+shaku = "0.6"

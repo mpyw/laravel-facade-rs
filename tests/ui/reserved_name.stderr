@@ -1,0 +1,5 @@
+error: `swap` clashes with a method generated on every facade
+ --> tests/ui/reserved_name.rs:6:8
+  |
+6 |     fn swap(&self);
+  |        ^^^^

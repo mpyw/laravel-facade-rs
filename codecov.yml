@@ -1,0 +1,15 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+    patch:
+      default:
+        target: auto
+
+# Doctests are measured too, so the README shows up as a source file.
+ignore:
+  - "tests/**"
