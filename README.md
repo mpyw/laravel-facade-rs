@@ -5,31 +5,22 @@
 [![crates.io](https://img.shields.io/crates/v/laravel-facade.svg)](https://crates.io/crates/laravel-facade)
 [![docs.rs](https://docs.rs/laravel-facade/badge.svg)](https://docs.rs/laravel-facade)
 
-Laravel-style facades for the [shaku](https://docs.rs/shaku) DI container.
+Laravel facades for Rust, on top of the [shaku](https://docs.rs/shaku) DI container.
 
-```text
-Cache::get("key")
-```
-
-Yes, in Rust. This is a joke crate. It still follows
+This is a joke crate. It still follows
 [`Illuminate\Support\Facades\Facade`](https://github.com/illuminate/support/blob/master/Facades/Facade.php)
 as closely as Rust allows.
 
-## Installation
+In Laravel, you write this:
 
-```toml
-[dependencies]
-laravel-facade = "0.1"
-shaku = "0.6"
+```php
+use Illuminate\Support\Facades\Cache;
+
+Cache::put('framework', 'Laravel');
+Cache::get('framework'); // 'Laravel'
 ```
 
-> [!NOTE]
-> shaku's derive macros expand to `::shaku` paths. You need `shaku` as a direct dependency.
-
-## Quick start
-
-Put `#[extends_facade(Name)]` on a shaku interface trait. It generates a unit struct `Name` with one static method per trait method.
-Read `#[extends_facade(Cache)]` as `class Cache extends Facade`.
+With laravel-facade, you write this:
 
 ```rust
 use std::collections::HashMap;
@@ -38,6 +29,7 @@ use std::sync::Mutex;
 use laravel_facade::{Application, Facade, extends_facade};
 use shaku::{Component, Interface, module};
 
+// class Cache extends Facade
 #[extends_facade(Cache)]
 pub trait CacheStore: Interface {
     fn get(&self, key: &str) -> Option<String>;
@@ -79,11 +71,43 @@ fn main() {
 }
 ```
 
-> [!IMPORTANT]
-> A shaku module cannot be searched by interface at runtime.
-> So `Application` must know each interface up front.
-> Call `bind::<dyn Trait>()` for components and `bind_provider::<dyn Trait>()` for providers.
+## Installation
+
+```toml
+[dependencies]
+laravel-facade = "0.1"
+shaku = "0.6"
+```
+
+> [!NOTE]
+> shaku's derive macros expand to `::shaku` paths. You need `shaku` as a direct dependency.
+
+## How it works
+
+`#[extends_facade(Cache)]` keeps the trait as is. It adds these items next to it:
+
+| Generated item | Purpose |
+| --- | --- |
+| `struct Cache;` | The facade. It has the same visibility as the trait. |
+| `impl ExtendsFacade for Cache` | Sets `type Accessor = dyn CacheStore`. This is `getFacadeAccessor()`. |
+| `Cache::get(..)`, `Cache::put(..)` | One static method per trait method. This is `__callStatic()`. |
+| `Cache::swap(..)`, `Cache::fake(..)`, ... | The facade API. You do not need to import a trait for it. |
+
+`Application` is the container behind all facades.
+A shaku module cannot be searched by interface at runtime.
+So `Application` must know each interface up front:
+
+| Binding | Use it for | Each resolution returns |
+| --- | --- | --- |
+| `bind::<dyn Trait>()` | shaku components | The same shared instance |
+| `bind_provider::<dyn Trait>()` | shaku providers | A new instance |
+
+> [!NOTE]
 > The `TypeId` of `dyn Trait` plays the role of Laravel's string key.
+
+> [!TIP]
+> A facade caches the first instance it resolves, like `static::$cached` in Laravel.
+> Use `#[extends_facade(Uuid, cached = false)]` to get a fresh provider instance on each call.
 
 ## Testing
 
@@ -158,28 +182,33 @@ fn main() {
 > Reset the state at the end of each test:
 >
 > ```rust
-> laravel_facade::Facade::clear_resolved_instances();
-> laravel_facade::Facade::set_facade_application(None);
+> use laravel_facade::Facade;
+>
+> Facade::clear_resolved_instances();
+> Facade::set_facade_application(None);
 > ```
 
 ## Laravel mapping
 
 | Laravel | laravel-facade |
 | --- | --- |
-| `abstract class Facade` | `enum Facade {}`. It has no values, and holds the base class statics. |
-| `class Cache extends Facade` | `impl ExtendsFacade for Cache`. The macro writes it. |
-| `getFacadeAccessor()` | `type Accessor = dyn Trait`. The macro sets it. |
-| `__callStatic()` | One generated static method per trait method |
-| `static::$cached` | `#[extends_facade(Name, cached = false)]` |
-| `Facade::setFacadeApplication()` / `Facade::getFacadeApplication()` | `Facade::set_facade_application()` / `Facade::get_facade_application()` |
-| `getFacadeRoot()` | `Name::get_facade_root()`. It panics with `A facade root has not been set.` |
-| `swap()` | `Name::swap()`. It also calls `Application::instance()`. |
-| `isFake()` | `Name::is_fake()`, with the `Fake` marker trait |
-| `shouldReceive()` / `expects()` | `Name::should_receive()` / `Name::expects()` |
-| `resolved()` | `Name::resolved(\|root, app\| ...)` |
-| `clearResolvedInstance()` / `Facade::clearResolvedInstances()` | `Name::clear_resolved_instance()` / `Facade::clear_resolved_instances()` |
-| `spy()` / `partialMock()` | Not supported. mockall has no spies. |
-| `defaultAliases()` | `use app::facades::Cache;` |
+| `abstract class Facade` | `enum Facade {}`. It has no values, like an abstract class. |
+| `class Cache extends Facade` | `#[extends_facade(Cache)]` |
+| `getFacadeAccessor()` | `type Accessor = dyn CacheStore`. The macro sets it. |
+| `__callStatic()` | One static method per trait method |
+| `static::$cached` | `#[extends_facade(Cache, cached = false)]` |
+| `Facade::setFacadeApplication($app)` | `Facade::set_facade_application(app)` |
+| `Facade::getFacadeApplication()` | `Facade::get_facade_application()` |
+| `Cache::getFacadeRoot()` | `Cache::get_facade_root()`. It panics with `A facade root has not been set.` |
+| `Cache::swap($instance)` | `Cache::swap(instance)`. It also calls `Application::instance()`. |
+| `Cache::isFake()` | `Cache::is_fake()`, with the `Fake` marker trait |
+| `Cache::shouldReceive()` / `Cache::expects()` | `Cache::should_receive(..)` / `Cache::expects(..)` |
+| `Cache::resolved($callback)` | `Cache::resolved(\|root, app\| ...)` |
+| `Cache::clearResolvedInstance()` | `Cache::clear_resolved_instance()` |
+| `Facade::clearResolvedInstance($name)` | `Facade::clear_resolved_instance::<dyn CacheStore>()` |
+| `Facade::clearResolvedInstances()` | `Facade::clear_resolved_instances()` |
+| `Cache::spy()` / `Cache::partialMock()` | Not supported. mockall has no spies. |
+| `Facade::defaultAliases()` | `use app::facades::Cache;` |
 
 ## What the macro can forward
 
@@ -187,9 +216,9 @@ fn main() {
 | --- | --- |
 | `fn f(&self, ...)` | Forwarded |
 | `fn f(self: Arc<Self>, ...)` | Forwarded |
-| `async fn f(&self, ...)` with `#[async_trait]` | Forwarded as `async fn`. Put `#[extends_facade]` above `#[async_trait]`. |
 | `fn f<'a>(&self, x: &'a str) -> &'a str` | Forwarded |
-| Methods with `where Self: Sized` | Skipped. They are not callable on `dyn Trait`. |
+| `async fn f(&self, ...)` with `#[async_trait]` | Forwarded as `async fn`. Put `#[extends_facade]` above `#[async_trait]`. |
+| A method with `where Self: Sized` | Skipped. It is not callable on `dyn Trait`. |
 | `fn f(&self) -> &str` | Compile error. The borrow would outlive the root `Arc`. |
 | `fn f(&mut self)` | Compile error. The root is shared. |
 | A method named like a generated one, such as `swap` | Compile error |
